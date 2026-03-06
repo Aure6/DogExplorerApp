@@ -32,7 +32,7 @@ else
                             <p class="card-text">@dog.Description</p>
                             <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(dog)">Modifier</button>
                             <button class="btn btn-danger btn-sm"
-                                    @onclick="() => AppState.RemoveFavorite(dog.Id)">Supprimer</button>
+                                    @onclick="() => AppState.RemoveFavoriteAsync(dog.Id)">Supprimer</button>
                         }
                     </div>
                 </div>
@@ -55,11 +55,11 @@ else
         editDescription = dog.Description;
     }
 
-    private void SaveEdit(FavoriteDog dog)
+    private async Task SaveEdit(FavoriteDog dog)
     {
         dog.CustomName = editName;
         dog.Description = editDescription;
-        AppState.UpdateFavorite(dog);
+        await AppState.UpdateFavoriteAsync(dog); // On attend la sauvegarde
         editingId = null;
     }
 
