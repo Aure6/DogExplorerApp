@@ -1,0 +1,83 @@
+@page "/"
+@inject DogApiService DogApi
+@inject LocalAppState AppState
+@implements IDisposable
+
+<PageTitle>Dog Explorer</PageTitle>
+
+@if (!AppState.CurrentUser.IsAuthenticated)
+{
+    <div class="card p-4 mx-auto" style="max-width: 400px;">
+        <h3>Connexion Locale</h3>
+        <input @bind="username" class="form-control mb-2" placeholder="Nom d'utilisateur" />
+        <input @bind="password" type="password" class="form-control mb-2" placeholder="Mot de passe (admin123)" />
+        <button class="btn btn-primary" @onclick="Login">Se connecter</button>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <h2>Bienvenue, @AppState.CurrentUser.Username !</h2>
+        <button class="btn btn-danger btn-sm mb-4" @onclick="AppState.Logout">Se déconnecter</button>
+
+        @if (currentDogUrl != null)
+        {
+            <div>
+                <img src="@currentDogUrl" alt="Un chien mignon" class="img-fluid rounded shadow-sm mb-3"
+                     style="max-height: 400px;" />
+            </div>
+            <button class="btn btn-success me-2" @onclick="() => AppState.AddFavorite(currentDogUrl)">❤️ Ajouter aux
+                Favoris</button>
+                <button class="btn btn-secondary" @onclick="LoadNewDog">Passer au suivant ➡️</button>
+            }
+        else
+            {
+                <p>Chargement du toutou...</p>
+            }
+        </div>
+    }
+
+@code {
+    private string? username;
+    private string? password;
+    private string? currentDogUrl; // <-- Le point d'interrogation fait toute la différence
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnChange += StateHasChanged;
+        if (AppState.CurrentUser.IsAuthenticated) await LoadNewDog();
+    }
+
+    // Ajoutez le mot "async" ici
+    private async Task Login()
+    {
+        AppState.Login(username, password);
+        if (AppState.CurrentUser.IsAuthenticated)
+        {
+            // On utilise "await" au lieu du "_ ="
+            await LoadNewDog();
+        }
+    }
+
+    private async Task LoadNewDog()
+    {
+        // On vide l'URL précédente (si on clique sur "Suivant")
+        currentDogUrl = null;
+
+        try
+        {
+            // On va chercher l'image sur Internet
+            currentDogUrl = await DogApi.GetRandomDogAsync();
+        }
+        catch (Exception ex)
+        {
+            // Au cas où il n'y a pas d'internet
+            Console.WriteLine($"Erreur API : {ex.Message}");
+        }
+
+        // LA LIGNE MAGIQUE EST ICI :
+        StateHasChanged();
+    }
+
+    public void Dispose() => AppState.OnChange -= StateHasChanged;
+}
