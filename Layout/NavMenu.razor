@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject DogExplorerApp.Services.LocalAppState AppState
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">DogExplorerApp</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -14,11 +17,14 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="favorites">
-                <span class="bi bi-heart-fill-nav-menu" aria-hidden="true"></span> Mes Favoris
-            </NavLink>
-        </div>
+        @if (AppState.CurrentUser.IsAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="favorites">
+                    <span class="bi bi-heart-fill-nav-menu" aria-hidden="true"></span> Mes Favoris
+                </NavLink>
+            </div>
+        }
         @* <div class="nav-item px-3">
             <NavLink class="nav-link" href="counter">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
@@ -40,5 +46,17 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        // On s'abonne aux changements d'état de l'application
+        AppState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // On se désabonne quand le composant est détruit pour éviter les fuites de mémoire
+        AppState.OnChange -= StateHasChanged;
     }
 }
