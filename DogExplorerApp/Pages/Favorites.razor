@@ -10,31 +10,48 @@
 }
 else
 {
-    <h2>Mes Chiens Favoris (@AppState.Favorites.Count)</h2>
+    <h2>Mes chiens favoris (@AppState.Favorites.Count)</h2>
 
-    <div class="row">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         @foreach (var dog in AppState.Favorites)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <img src="@dog.ImageUrl" class="card-img-top" alt="Dog" style="height: 200px; object-fit: cover;" />
-                    <div class="card-body">
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+
+                    <div style="height: 250px; overflow: hidden;">
+                        <img src="@dog.ImageUrl" class="w-100 h-100" style="object-fit: cover; object-position: center;"
+                             alt="Chien favori" />
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
                         @if (editingId == dog.Id)
                         {
-                            <input @bind="editName" class="form-control mb-2" />
-                            <textarea @bind="editDescription" class="form-control mb-2"></textarea>
-                            <button class="btn btn-success btn-sm" @onclick="() => SaveEdit(dog)">Sauvegarder</button>
-                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Annuler</button>
+                            <input @bind="editName" class="form-control mb-2" placeholder="Nom du chien" />
+                            <textarea @bind="editDescription" class="form-control mb-2" rows="3"
+                                      placeholder="Description"></textarea>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-success btn-sm flex-fill" @onclick="() => SaveEdit(dog)">Sauvegarder</button>
+                                <button class="btn btn-secondary btn-sm flex-fill" @onclick="CancelEdit">Annuler</button>
+                            </div>
                         }
                         else
                         {
-                            <h5 class="card-title">@dog.CustomName</h5>
-                            <p class="card-text">@dog.Description</p>
-                            <button class="btn btn-warning btn-sm" @onclick="() => StartEdit(dog)">Modifier</button>
-                            <button class="btn btn-danger btn-sm"
-                                    @onclick="() => AppState.RemoveFavoriteAsync(dog.Id)">Supprimer</button>
+                            <h5 class="card-title fw-bold">@dog.CustomName</h5>
+                            <p class="card-text text-muted">@dog.Description</p>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-primary btn-sm flex-fill" @onclick="() => StartEdit(dog)">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm flex-fill"
+                                        @onclick="() => AppState.RemoveFavoriteAsync(dog.Id)">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </div>
                         }
                     </div>
+
                 </div>
             </div>
         }
@@ -43,8 +60,8 @@ else
 
 @code {
     private Guid? editingId;
-    private string? editName; // <-- Ajoutez le ? ici
-    private string? editDescription; // <-- Et le ? ici
+    private string? editName;
+    private string? editDescription;
 
     protected override void OnInitialized() => AppState.OnChange += StateHasChanged;
 
