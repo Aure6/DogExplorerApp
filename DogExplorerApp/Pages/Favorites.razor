@@ -16,9 +16,10 @@ else
         @foreach (var dog in AppState.Favorites)
         {
             <div class="col">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm" style="
+                    background-color: #F9F6F0;">
 
-                    <div style="height: 250px; overflow: hidden;">
+                    <div style="height: 250px; overflow: hidden; ">
                         <img src="@dog.ImageUrl" class="w-100 h-100" style="object-fit: cover; object-position: center;"
                              alt="Chien favori" />
                     </div>
@@ -39,7 +40,7 @@ else
                         {
                             <h5 class="card-title fw-bold">@dog.CustomName</h5>
 
-                            <span class="badge bg-info text-dark mb-2">@dog.Breed</span>
+                            <span class="mb-2">@dog.Breed</span>
 
                             <p class="card-text text-muted">@dog.Description</p>
 
