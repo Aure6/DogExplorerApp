@@ -44,7 +44,11 @@ public class LocalAppState
     {
         if (!Favorites.Any(f => f.ImageUrl == imageUrl))
         {
-            Favorites.Add(new FavoriteDog { ImageUrl = imageUrl });
+            Favorites.Add(new FavoriteDog
+            {
+                ImageUrl = imageUrl,
+                Breed = DogApiService.GetBreedFromUrl(imageUrl)
+            });
             await SaveFavoritesAsync();
             NotifyStateChanged();
         }

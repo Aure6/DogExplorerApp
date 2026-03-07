@@ -112,3 +112,10 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Force la taille du texte à 1rem pour tous les boutons */
+button,
+.btn {
+    font-size: 1rem !important;
+    padding: 0.5rem 1rem !important;
+}

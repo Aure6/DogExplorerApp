@@ -38,10 +38,13 @@ else
                         else
                         {
                             <h5 class="card-title fw-bold">@dog.CustomName</h5>
+
+                            <span class="badge bg-info text-dark mb-2">@dog.Breed</span>
+
                             <p class="card-text text-muted">@dog.Description</p>
 
                             <div class="mt-auto d-flex gap-2">
-                                <button class="btn btn-outline-primary btn-sm flex-fill" @onclick="() => StartEdit(dog)">
+                                <button class="btn btn-outline-success btn-sm flex-fill" @onclick="() => StartEdit(dog)">
                                     <i class="bi bi-pencil"></i> Modifier
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm flex-fill"
