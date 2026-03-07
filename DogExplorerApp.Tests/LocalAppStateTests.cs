@@ -70,7 +70,6 @@ public class LocalAppStateTests
         Assert.Single(appState.Favorites);
         Assert.Equal(urlChienTest, appState.Favorites[0].ImageUrl);
 
-        // ---> C'EST ICI QUE SE PLACE LE VERIFY <---
         // On vérifie que la sauvegarde a bien été déclenchée avec la bonne clé et le CancellationToken
         mockLocalStorage.Verify(
             ls => ls.SetItemAsync("favoris_Alice", appState.Favorites, It.IsAny<CancellationToken>()),
