@@ -1,5 +1,7 @@
 using Blazored.LocalStorage;
 using DogExplorerApp.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DogExplorerApp.Services;
 
@@ -39,8 +41,11 @@ public class LocalAppState
         var users = await _localStorage.GetItemAsync<Dictionary<string, string>>(UsersKey)
                     ?? new Dictionary<string, string>();
 
-        // On vérifie si l'utilisateur existe ET si le mot de passe correspond
-        if (users.TryGetValue(username, out var storedPassword) && storedPassword == password)
+        // On hache le mot de passe tapé pour le comparer
+        var hashedInput = HashPassword(password);
+
+        // On compare les deux HASHES
+        if (users.TryGetValue(username, out var storedPasswordHash) && storedPasswordHash == hashedInput)
         {
             CurrentUser = new LocalUser { Username = username, IsAuthenticated = true };
             Favorites = await _localStorage.GetItemAsync<List<FavoriteDog>>(GetUserFavoritesKey())
@@ -75,12 +80,11 @@ public class LocalAppState
         }
         else
         {
-            // On ajoute le nouvel utilisateur et on sauvegarde
-            users[username] = password;
-            await _localStorage.SetItemAsync(UsersKey, users);
+            // On hache le mot de passe avant de le sauvegarder.
+            users[username] = HashPassword(password);
 
-            // On le connecte automatiquement après l'inscription
-            await LoginAsync(username, password);
+            await _localStorage.SetItemAsync(UsersKey, users);
+            await LoginAsync(username, password); // On passe le mot de passe en clair ici, LoginAsync le hachera
         }
     }
 
@@ -139,4 +143,20 @@ public class LocalAppState
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    private string HashPassword(string password)
+    {
+        // On crée une instance de l'algorithme SHA256
+        using (var sha256 = SHA256.Create())
+        {
+            // On transforme le texte en un tableau d'octets (bytes)
+            var bytes = Encoding.UTF8.GetBytes(password);
+
+            // On calcule le hash
+            var hash = sha256.ComputeHash(bytes);
+
+            // On le convertit en une chaîne de texte lisible (Base64) pour le sauvegarder
+            return Convert.ToBase64String(hash);
+        }
+    }
 }

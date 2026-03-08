@@ -65,8 +65,17 @@ public class LocalAppStateTests
         // 1. Arrange
         var mockLocalStorage = new Mock<ILocalStorageService>();
 
-        // NOUVEAU : On simule que "Alice" est DÉJÀ inscrite dans la base de données locale
-        var fakeUsers = new Dictionary<string, string> { { "Alice", "admin123" } };
+        // On calcule le hash mathématique de "admin123" pour le test
+        string hashAdmin123;
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes("admin123");
+            hashAdmin123 = Convert.ToBase64String(sha256.ComputeHash(bytes));
+        }
+
+        // On insère ce vrai hash dans notre fausse base de données
+        var fakeUsers = new Dictionary<string, string> { { "Alice", hashAdmin123 } };
+
         mockLocalStorage
             .Setup(ls => ls.GetItemAsync<Dictionary<string, string>>("app_registered_users", It.IsAny<CancellationToken>()))
             .ReturnsAsync(fakeUsers);
@@ -77,7 +86,7 @@ public class LocalAppStateTests
 
         var appState = new LocalAppState(mockLocalStorage.Object);
 
-        // On connecte Alice (ça va marcher car on l'a mise dans fakeUsers)
+        // On connecte Alice
         await appState.LoginAsync("Alice", "admin123");
 
         string urlChienTest = "https://images.dog.ceo/breeds/beagle/test.jpg";
@@ -88,7 +97,7 @@ public class LocalAppStateTests
         // 3. Assert
         Assert.Single(appState.Favorites);
         Assert.Equal(urlChienTest, appState.Favorites[0].ImageUrl);
-        Assert.Equal("Beagle", appState.Favorites[0].Breed); // On vérifie même que l'extraction de race marche !
+        Assert.Equal("Beagle", appState.Favorites[0].Breed);
 
         mockLocalStorage.Verify(
             ls => ls.SetItemAsync("favoris_Alice", appState.Favorites, It.IsAny<CancellationToken>()),
