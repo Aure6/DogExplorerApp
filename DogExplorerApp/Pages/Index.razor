@@ -7,11 +7,33 @@
 
 @if (!AppState.CurrentUser.IsAuthenticated)
 {
-    <div class="card p-4 mx-auto" style="max-width: 400px;">
-        <h3>Connexion Locale</h3>
-        <input @bind="username" class="form-control mb-2" placeholder="Nom d'utilisateur" />
-        <input @bind="password" type="password" class="form-control mb-2" placeholder="Mot de passe (admin123)" />
-        <button class="btn btn-primary" @onclick="Login">Se connecter</button>
+    <div class="card p-4 mx-auto shadow-sm" style="max-width: 400px; background-color: #F9F6F0">
+        <h3 class=" text-center mb-4">@(isRegistering ? "Créer un compte" : "Connexion")</h3>
+
+        @if (!string.IsNullOrEmpty(AppState.ErrorMessage))
+        {
+            <div class="alert alert-danger py-2">@AppState.ErrorMessage</div>
+        }
+
+        <input @bind="username" class="form-control mb-3" placeholder="Nom d'utilisateur" />
+        <input @bind="password" type="password" class="form-control mb-3" placeholder="Mot de passe" />
+
+        @if (isRegistering)
+        {
+            <button class="btn btn-success w-100 mb-2" @onclick="Register">S'inscrire</button>
+            <button class="btn btn-link w-100 text-decoration-none"
+                    @onclick="() => { isRegistering = false; AppState.LoginAsync(null, null); }">
+                Déjà un compte ? Se connecter
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-primary w-100 mb-2" @onclick="Login">Se connecter</button>
+            <button class="btn btn-link w-100 text-decoration-none"
+                    @onclick="() => { isRegistering = true; AppState.LoginAsync(null, null); }">
+                Nouveau ? Créer un compte
+            </button>
+        }
     </div>
 }
 else
@@ -41,9 +63,10 @@ else
     }
 
 @code {
+    private bool isRegistering = false; // Permet de basculer entre les deux modes
     private string? username;
     private string? password;
-    private string? currentDogUrl; // <-- Le point d'interrogation fait toute la différence
+    private string? currentDogUrl;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,11 +76,17 @@ else
 
     private async Task Login()
     {
-        await AppState.LoginAsync(username, password); // Ajout du await et Async
+        await AppState.LoginAsync(username, password);
         if (AppState.CurrentUser.IsAuthenticated)
         {
             await LoadNewDog();
         }
+    }
+
+    private async Task Register()
+    {
+        await AppState.RegisterAsync(username, password);
+        if (AppState.CurrentUser.IsAuthenticated) await LoadNewDog();
     }
 
     private async Task LoadNewDog()

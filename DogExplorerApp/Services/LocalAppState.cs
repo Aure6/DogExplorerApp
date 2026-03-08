@@ -19,17 +19,68 @@ public class LocalAppState
         _localStorage = localStorage;
     }
 
+    // Clé pour stocker la liste des utilisateurs (Nom d'utilisateur -> Mot de passe)
+    private const string UsersKey = "app_registered_users";
+
+    // Pour afficher les erreurs sur la page de connexion
+    public string? ErrorMessage { get; private set; }
+
     public async Task LoginAsync(string? username, string? password)
     {
-        if (!string.IsNullOrWhiteSpace(username) && password == "admin123")
+        ErrorMessage = null;
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            ErrorMessage = "Veuillez remplir tous les champs.";
+            NotifyStateChanged();
+            return;
+        }
+
+        // On récupère le dictionnaire des utilisateurs sauvegardés
+        var users = await _localStorage.GetItemAsync<Dictionary<string, string>>(UsersKey)
+                    ?? new Dictionary<string, string>();
+
+        // On vérifie si l'utilisateur existe ET si le mot de passe correspond
+        if (users.TryGetValue(username, out var storedPassword) && storedPassword == password)
         {
             CurrentUser = new LocalUser { Username = username, IsAuthenticated = true };
-
-            // On charge les favoris en utilisant la clé SPÉCIFIQUE à l'utilisateur
             Favorites = await _localStorage.GetItemAsync<List<FavoriteDog>>(GetUserFavoritesKey())
                         ?? new List<FavoriteDog>();
+        }
+        else
+        {
+            ErrorMessage = "Nom d'utilisateur ou mot de passe incorrect.";
+        }
 
+        NotifyStateChanged();
+    }
+
+    public async Task RegisterAsync(string? username, string? password)
+    {
+        ErrorMessage = null;
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            ErrorMessage = "Veuillez remplir tous les champs.";
             NotifyStateChanged();
+            return;
+        }
+
+        var users = await _localStorage.GetItemAsync<Dictionary<string, string>>(UsersKey)
+                    ?? new Dictionary<string, string>();
+
+        // On vérifie si le nom d'utilisateur est déjà pris
+        if (users.ContainsKey(username))
+        {
+            ErrorMessage = "Ce nom d'utilisateur existe déjà.";
+            NotifyStateChanged();
+        }
+        else
+        {
+            // On ajoute le nouvel utilisateur et on sauvegarde
+            users[username] = password;
+            await _localStorage.SetItemAsync(UsersKey, users);
+
+            // On le connecte automatiquement après l'inscription
+            await LoginAsync(username, password);
         }
     }
 

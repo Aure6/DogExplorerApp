@@ -26,10 +26,10 @@ public class IndexTests : TestContext
         var cut = Render<DogExplorerApp.Pages.Index>();
 
         // 3. Assert : On vérifie ce qui est généré en HTML
-        // On s'assure que le titre "Connexion Locale" est bien présent dans le HTML
-        Assert.Contains("Connexion Locale", cut.Markup);
+        // On cherche juste "Connexion"
+        Assert.Contains("Connexion", cut.Markup);
 
-        // On peut aussi vérifier qu'un élément spécifique existe
+        // On vérifie que le bouton bleu contient bien le texte "Se connecter"
         var loginButton = cut.Find("button.btn-primary");
         Assert.Equal("Se connecter", loginButton.TextContent);
     }
